@@ -1,14 +1,13 @@
 import SwiftUI
 import SwiftData
 
-/// 登録済みメモの一覧。タップで地図上の該当ピンへ移動できる。
+/// 登録済みメモ（ブランド単位）の一覧。タップで編集できる。
 struct MemoListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \StoreMemo.createdAt, order: .reverse) private var memos: [StoreMemo]
+    @Query(sort: \StoreMemo.updatedAt, order: .reverse) private var memos: [StoreMemo]
 
-    /// 行を選択したときに呼ばれる（地図側でフォーカスするために使用）
-    var onSelect: (StoreMemo) -> Void
+    @State private var editingMemo: StoreMemo?
 
     var body: some View {
         NavigationStack {
@@ -17,13 +16,13 @@ struct MemoListView: View {
                     ContentUnavailableView(
                         "メモがありません",
                         systemImage: "mappin.slash",
-                        description: Text("地図をタップするか「現在地にメモ」からお店のメモを追加できます。")
+                        description: Text("地図上のお店のピンをタップして、お得な決済方法などをメモできます。")
                     )
                 } else {
                     List {
                         ForEach(memos) { memo in
                             Button {
-                                onSelect(memo)
+                                editingMemo = memo
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(memo.storeName)
@@ -47,6 +46,9 @@ struct MemoListView: View {
                     Button("閉じる") { dismiss() }
                 }
             }
+            .sheet(item: $editingMemo) { memo in
+                StoreMemoEditorView(storeTitle: memo.storeName, existingMemo: memo)
+            }
         }
     }
 
@@ -54,5 +56,6 @@ struct MemoListView: View {
         for index in offsets {
             modelContext.delete(memos[index])
         }
+        try? modelContext.save()
     }
 }

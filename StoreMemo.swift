@@ -1,47 +1,36 @@
 import Foundation
 import SwiftData
-import CoreLocation
 
-/// 店舗ごとのメモを表す永続化モデル。
+/// お店の「ブランド」単位のメモを表す永続化モデル。
 ///
-/// 例: 「ローソン」で「○○クレカが還元率最大」など、
-/// 場所に紐づくお得情報をユーザーが自由に記録できる。
+/// `storeName` には「ローソン」「セブン-イレブン」などのブランド名（キーワード）を入れる。
+/// 地図上のお店の名前がこのキーワードを含んでいれば、同じメモが表示される。
+/// これにより「ローソンにメモすると全国のローソンに反映される」という挙動を実現する。
+///
+/// 例: storeName = "ローソン", memo = "三井住友カードのタッチ決済で最大7%還元"
 @Model
 final class StoreMemo {
-    /// 店舗名（例: ローソン △△店）
+    /// ブランド名（マッチング用キーワード）
     var storeName: String
-    /// メモ本文（例: 三井住友カードのタッチ決済で最大7%還元）
+    /// メモ本文（例: どの決済方法が一番お得か）
     var memo: String
-    /// 位置情報（緯度）。CLLocationCoordinate2D は直接保存できないため分割して保持する。
-    var latitude: Double
-    /// 位置情報（経度）
-    var longitude: Double
-    /// 作成日時
-    var createdAt: Date
+    /// 最終更新日時
+    var updatedAt: Date
 
-    init(
-        storeName: String,
-        memo: String,
-        latitude: Double,
-        longitude: Double,
-        createdAt: Date = .now
-    ) {
+    init(storeName: String, memo: String, updatedAt: Date = .now) {
         self.storeName = storeName
         self.memo = memo
-        self.latitude = latitude
-        self.longitude = longitude
-        self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 
-    /// 地図表示用の座標
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
-
-    /// 指定座標からの距離（メートル）を返す
-    func distance(from coordinate: CLLocationCoordinate2D) -> CLLocationDistance {
-        let here = CLLocation(latitude: latitude, longitude: longitude)
-        let target = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        return here.distance(from: target)
+    /// 地図上のお店の名前 `storeName` がこのメモのブランド名に該当するか判定する。
+    ///
+    /// どちらかがもう一方を含んでいればマッチとみなす（大文字小文字は無視）。
+    /// 例: メモのブランド名「ローソン」は、お店「ローソン 渋谷駅前店」にマッチする。
+    func matches(storeName: String) -> Bool {
+        let target = storeName.lowercased()
+        let keyword = self.storeName.lowercased()
+        guard !keyword.isEmpty, !target.isEmpty else { return false }
+        return target.contains(keyword) || keyword.contains(target)
     }
 }

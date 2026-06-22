@@ -65,11 +65,19 @@ struct ContentView: View {
 
             // 検索で見つかった実在のお店
             ForEach(storeSearch.stores) { store in
-                Annotation(store.name, coordinate: store.coordinate) {
+                let storeMemo = memo(for: store.name)
+                // アンカーを下端にして、ピンの先端が座標に来るようにする
+                Annotation(store.name, coordinate: store.coordinate, anchor: .bottom) {
                     Button {
                         tappedStore = store
                     } label: {
-                        StorePin(hasMemo: memo(for: store.name) != nil)
+                        VStack(spacing: 0) {
+                            // メモがあるお店はピンの上に吹き出しで表示
+                            if let storeMemo {
+                                MemoCallout(text: storeMemo.memo)
+                            }
+                            StorePin(hasMemo: storeMemo != nil)
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -148,6 +156,45 @@ struct ContentView: View {
                 return (store, memo)
             }
             .min { $0.store.distance(from: current) < $1.store.distance(from: current) }
+    }
+}
+
+/// ピンの上に表示するメモの吹き出し。
+private struct MemoCallout: View {
+    let text: String
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(text)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .frame(maxWidth: 180)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(.red, in: RoundedRectangle(cornerRadius: 10))
+
+            // 下向きの三角ポインタ
+            Triangle()
+                .fill(.red)
+                .frame(width: 14, height: 8)
+        }
+        .shadow(radius: 2)
+    }
+}
+
+/// 吹き出しの下向きポインタ用の三角形。
+private struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.closeSubpath()
+        return path
     }
 }
 

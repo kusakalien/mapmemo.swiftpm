@@ -33,7 +33,7 @@ let package = Package(
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
             capabilities: [
-                .location(purposeString: "現在地周辺のお店のメモを表示するために位置情報を使用します。")
+                .locationWhenInUse(purposeString: "現在地周辺のお店のメモを表示するために位置情報を使用します。")
             ]
         )
     ],

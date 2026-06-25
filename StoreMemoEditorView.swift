@@ -36,7 +36,7 @@ struct StoreMemoEditorView: View {
                 Section {
                     LabeledContent("タップしたお店", value: storeTitle)
                 } footer: {
-                    Text("メモは下の「ブランド名」を含むお店すべてに表示されます。例えば「ローソン」にすると全国のローソンに反映されます。")
+                    Text("メモは下の「ブランド名」で始まる名前のお店すべてに表示されます。例えば「ローソン」にすると全国のローソンに反映されます（「アローソン」など途中に含むだけのお店は対象外）。")
                 }
 
                 Section("ブランド名") {

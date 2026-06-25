@@ -25,12 +25,21 @@ final class StoreMemo {
 
     /// 地図上のお店の名前 `storeName` がこのメモのブランド名に該当するか判定する。
     ///
-    /// どちらかがもう一方を含んでいればマッチとみなす（大文字小文字は無視）。
-    /// 例: メモのブランド名「ローソン」は、お店「ローソン 渋谷駅前店」にマッチする。
+    /// 「店名がブランド名で始まる（前方一致）」場合にマッチとみなす（大文字小文字・前後の空白は無視）。
+    /// 前方一致にすることで、ブランド名を途中に含むだけの別のお店を誤ってマッチさせない。
+    ///
+    /// 例:
+    /// - ブランド名「ローソン」→「ローソン」「ローソン 渋谷駅前店」にマッチ
+    /// - ブランド名「ローソン」→「アローソン」にはマッチしない
     func matches(storeName: String) -> Bool {
-        let target = storeName.lowercased()
-        let keyword = self.storeName.lowercased()
+        let target = Self.normalize(storeName)
+        let keyword = Self.normalize(self.storeName)
         guard !keyword.isEmpty, !target.isEmpty else { return false }
-        return target.contains(keyword) || keyword.contains(target)
+        return target.hasPrefix(keyword)
+    }
+
+    /// マッチング用に文字列を正規化する（前後の空白除去・小文字化）。
+    private static func normalize(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }

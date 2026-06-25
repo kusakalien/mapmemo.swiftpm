@@ -11,6 +11,7 @@ import CoreLocation
 /// - 現在地を取得し、近くのお店にメモがあれば画面上部のバナーで知らせる
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(StoreManager.self) private var store
     @Query private var memos: [StoreMemo]
 
     @State private var locationManager = LocationManager()
@@ -42,12 +43,14 @@ struct ContentView: View {
                     }
                 }
                 // メモ編集シート（お店のピンをタップして表示）
-                .sheet(item: $tappedStore) { store in
-                    StoreMemoEditorView(storeTitle: store.name, existingMemo: memo(for: store.name))
+                .sheet(item: $tappedStore) { tapped in
+                    StoreMemoEditorView(storeTitle: tapped.name, existingMemo: memo(for: tapped.name))
+                        .environment(store)
                 }
                 // メモ一覧シート
                 .sheet(isPresented: $showingList) {
                     MemoListView()
+                        .environment(store)
                 }
                 .task {
                     locationManager.requestPermission()

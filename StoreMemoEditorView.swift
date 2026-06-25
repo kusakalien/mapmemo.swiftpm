@@ -101,6 +101,7 @@ struct StoreMemoEditorView: View {
             }
             .sheet(isPresented: $showingPaywall) {
                 PaywallView()
+                    .environment(store)
             }
         }
     }

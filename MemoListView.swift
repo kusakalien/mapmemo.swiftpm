@@ -54,9 +54,11 @@ struct MemoListView: View {
             }
             .sheet(item: $editingMemo) { memo in
                 StoreMemoEditorView(storeTitle: memo.storeName, existingMemo: memo)
+                    .environment(store)
             }
             .sheet(isPresented: $showingPaywall) {
                 PaywallView()
+                    .environment(store)
             }
         }
     }

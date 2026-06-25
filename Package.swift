@@ -40,7 +40,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "AppModule",
-            path: "."
+            path: ".",
+            exclude: ["docs"]
         )
     ]
 )

@@ -1,0 +1,45 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "ja_JP",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "ba95107d-42fd-4aa1-8a85-adfed54e0c0f",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "250",
+      "familyShareable" : false,
+      "internalID" : "914563a4-26d7-40cf-aa29-eae10c4d6246",
+      "localizations" : [
+        {
+          "description" : "メモを無制限に登録できます",
+          "displayName" : "メモ無制限",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.kusakalien.mapmemo.unlimited",
+      "referenceName" : "メモ無制限",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "ja_JP",
+    "_storefront" : "JPN",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

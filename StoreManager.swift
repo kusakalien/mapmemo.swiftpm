@@ -18,8 +18,11 @@ final class StoreManager {
     private(set) var unlimitedProduct: Product?
     /// 無制限が解除されているか
     private(set) var isUnlimitedUnlocked = false
-    /// 商品読み込みに失敗したか（ストアに接続できない等）
-    private(set) var loadFailed = false
+    /// 商品読み込みに失敗した理由（成功時は nil）
+    private(set) var loadErrorMessage: String?
+
+    /// 商品読み込みに失敗したか
+    var loadFailed: Bool { loadErrorMessage != nil }
 
     @ObservationIgnored
     private var updatesTask: Task<Void, Never>?
@@ -46,10 +49,20 @@ final class StoreManager {
         do {
             let products = try await Product.products(for: [Self.unlimitedProductID])
             unlimitedProduct = products.first
-            loadFailed = (unlimitedProduct == nil)
+            if unlimitedProduct == nil {
+                // 通信は成功したが、該当 ID の商品が返ってこなかったケース
+                loadErrorMessage = """
+                課金商品が見つかりませんでした。
+                App Store Connect での商品（\(Self.unlimitedProductID)）の登録、\
+                および「有料Appの契約」の締結が必要です。Xcode で検証する場合は \
+                StoreKit Configuration ファイルを使用してください。
+                """
+            } else {
+                loadErrorMessage = nil
+            }
         } catch {
             unlimitedProduct = nil
-            loadFailed = true
+            loadErrorMessage = "ストアに接続できませんでした: \(error.localizedDescription)"
         }
     }
 

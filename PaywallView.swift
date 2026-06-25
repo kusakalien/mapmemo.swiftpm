@@ -52,11 +52,12 @@ struct PaywallView: View {
                             .foregroundStyle(.white)
                         }
                         .disabled(isPurchasing)
-                    } else if store.loadFailed {
-                        Text("商品情報を読み込めませんでした。\nネットワーク接続を確認してください。")
+                    } else if let message = store.loadErrorMessage {
+                        Text(message)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                         Button("再読み込み") {
                             Task { await store.loadProducts() }
                         }

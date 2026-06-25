@@ -41,7 +41,7 @@ let package = Package(
         .executableTarget(
             name: "AppModule",
             path: ".",
-            exclude: ["docs"]
+            exclude: ["docs", "Configuration.storekit"]
         )
     ]
 )

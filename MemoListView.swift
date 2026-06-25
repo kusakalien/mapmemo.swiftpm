@@ -5,9 +5,11 @@ import SwiftData
 struct MemoListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(StoreManager.self) private var store
     @Query(sort: \StoreMemo.updatedAt, order: .reverse) private var memos: [StoreMemo]
 
     @State private var editingMemo: StoreMemo?
+    @State private var showingPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -20,22 +22,26 @@ struct MemoListView: View {
                     )
                 } else {
                     List {
-                        ForEach(memos) { memo in
-                            Button {
-                                editingMemo = memo
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(memo.storeName)
-                                        .font(.headline)
-                                    Text(memo.memo)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(2)
+                        planSection
+
+                        Section {
+                            ForEach(memos) { memo in
+                                Button {
+                                    editingMemo = memo
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(memo.storeName)
+                                            .font(.headline)
+                                        Text(memo.memo)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+                                    }
                                 }
+                                .tint(.primary)
                             }
-                            .tint(.primary)
+                            .onDelete(perform: delete)
                         }
-                        .onDelete(perform: delete)
                     }
                 }
             }
@@ -48,6 +54,27 @@ struct MemoListView: View {
             }
             .sheet(item: $editingMemo) { memo in
                 StoreMemoEditorView(storeTitle: memo.storeName, existingMemo: memo)
+            }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView()
+            }
+        }
+    }
+
+    /// 課金プランの状態を表示するセクション
+    @ViewBuilder
+    private var planSection: some View {
+        if store.isUnlimitedUnlocked {
+            Section {
+                Label("メモ無制限プラン", systemImage: "checkmark.seal.fill")
+                    .foregroundStyle(.green)
+            }
+        } else {
+            Section {
+                LabeledContent("無料プラン", value: "\(memos.count) / \(StoreManager.freeMemoLimit) 件")
+                Button("メモを無制限にする") {
+                    showingPaywall = true
+                }
             }
         }
     }

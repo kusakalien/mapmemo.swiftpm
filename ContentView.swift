@@ -214,4 +214,5 @@ private struct StorePin: View {
 #Preview {
     ContentView()
         .modelContainer(for: StoreMemo.self, inMemory: true)
+        .environment(StoreManager())
 }

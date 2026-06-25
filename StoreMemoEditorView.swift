@@ -8,6 +8,10 @@ import SwiftData
 struct StoreMemoEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(StoreManager.self) private var store
+
+    /// 無料上限の判定に使う、現在のメモ件数
+    @Query private var allMemos: [StoreMemo]
 
     /// タップされたお店の名前（表示・初期値用）
     let storeTitle: String
@@ -17,6 +21,7 @@ struct StoreMemoEditorView: View {
     @State private var brandName: String
     @State private var memoText: String
     @State private var showingDeleteConfirmation = false
+    @State private var showingPaywall = false
 
     init(storeTitle: String, existingMemo: StoreMemo?) {
         self.storeTitle = storeTitle
@@ -52,6 +57,18 @@ struct StoreMemoEditorView: View {
                     .lineLimit(3...6)
                 }
 
+                // 新規作成時、無料プランの残り件数を表示する
+                if existingMemo == nil && !store.isUnlimitedUnlocked {
+                    Section {
+                        LabeledContent("無料プランの残り", value: "\(max(0, StoreManager.freeMemoLimit - allMemos.count)) / \(StoreManager.freeMemoLimit) 件")
+                        Button("メモを無制限にする") {
+                            showingPaywall = true
+                        }
+                    } footer: {
+                        Text("無料で登録できるメモは\(StoreManager.freeMemoLimit)件までです。")
+                    }
+                }
+
                 if existingMemo != nil {
                     Section {
                         Button(role: .destructive) {
@@ -82,6 +99,9 @@ struct StoreMemoEditorView: View {
                 Button("削除", role: .destructive) { delete() }
                 Button("キャンセル", role: .cancel) {}
             }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView()
+            }
         }
     }
 
@@ -94,6 +114,11 @@ struct StoreMemoEditorView: View {
             existing.memo = text
             existing.updatedAt = .now
         } else {
+            // 新規作成時のみ無料上限をチェックする
+            guard store.canAddMemo(currentCount: allMemos.count) else {
+                showingPaywall = true
+                return
+            }
             modelContext.insert(StoreMemo(storeName: name, memo: text))
         }
         // 確実に永続化する
